@@ -149,7 +149,7 @@ if __name__ == "__main__":
     results = []
     r_order = valid.copy()
     random.shuffle(r_order)
-    print("No valid vectors:", len(valid))
+    print("Number valid vectors:", len(valid))
 
     while len(results) < n and len(r_order) > 0:
         next_list = r_order[0]
@@ -161,5 +161,7 @@ if __name__ == "__main__":
     myBoard = MyBoard(n)
     myBoard.generate_board()
 
-    myBoard.print_board()
+    for x, y in results:
+        myBoard.set_queen(x, y)
 
+    myBoard.print_board()
