@@ -229,35 +229,38 @@ def insert_into(b_size, coordinates):
         print("Nothing to insert...")
 
 
-def get_all_possibilities(c, val, values, board, file_name):
+def get_all_possibilities(c, val, values, val_checked, board, file_name):
     origin_values = values[:]
     for row in board:
+        print("CHECK ROW:", row)
         if len(values) > 0:
             if val in row:
                 continue
             else:
                 for coord in row:
-                    new_co = validate(coord, values, board)
-                    if new_co:
-                        values.append(coord)
-                        if len(values) == c:
-                            res = ""
-                            values.sort()
-                            for k in values:
-                                res += "{}|".format(k)
-                            insert = True
-                            if res[:-1] in open(file_name).read():
-                                insert = False
-                            if insert:
-                                fn = open(file_name, 'a+')
-                                fn.write(res[:-1])
-                                fn.write('\n')
-                                fn.close()
-                        else:
-                            try:
-                                values += get_all_possibilities(c, coord, values, board, file_name)
-                            except TypeError as myerror:
-                                print("These positions aren't suitable.", values)
+                    if coord not in val_checked:
+                        val_checked.append(coord)
+                        new_co = validate(coord, values, board)
+                        if new_co:
+                            values.append(coord)
+                            if len(values) == c:
+                                res = ""
+                                values.sort()
+                                for k in values:
+                                    res += "{}|".format(k)
+                                insert = True
+                                if res[:-1] in open(file_name).read():
+                                    insert = False
+                                if insert:
+                                    fn = open(file_name, 'a+')
+                                    fn.write(res[:-1])
+                                    fn.write('\n')
+                                    fn.close()
+                            else:
+                                try:
+                                    values += get_all_possibilities(c, coord, values, val_checked, board, file_name)
+                                except TypeError as myerror:
+                                    print("These positions aren't suitable.", myerror, values)
                     values = origin_values[:]
         else:
             values.append(val)
@@ -282,8 +285,9 @@ if __name__ == "__main__":
 
     for g in arr:
         results = []
+        checked = []
         print("#### checking for {}".format(g))
-        get_all_possibilities(n, g, results, valid, filename)
+        get_all_possibilities(n, g, results, checked, valid, filename)
 
     # #######################################################################
     # This will provide us a single board and print with the queens position.
