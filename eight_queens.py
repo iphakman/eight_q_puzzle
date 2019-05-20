@@ -42,6 +42,19 @@ class MyBoard:
         print(self.board)
 
 
+def insert_into(coordinates):
+    """
+    This function will insert a possible solutions for our square
+    :param coordinates: the list of lists contains coordinates for each queen
+    :return: None
+    """
+    pass
+
+
+def get_solutions():
+    pass
+
+
 def def_queens_pos(ordered, values, directions):
     """
     This will generate a set of coordinates for each n queen
@@ -136,6 +149,19 @@ def gen_arrays(s):
     return my_arrays
 
 
+def get_all_possibilities(c, values, directions, board):
+    for row in directions[:-c]:
+        for val in row:
+            new_co = validate(val, values, directions)
+            if new_co:
+                values.append(val)
+                del directions[0]
+                values += get_all_possibilities(c, values, directions, board)
+        if len(values) == c:
+            print(values)
+            break
+
+
 if __name__ == "__main__":
     n = 5
 
@@ -147,21 +173,24 @@ if __name__ == "__main__":
     valid = gen_arrays(n)
 
     results = []
-    r_order = valid.copy()
-    random.shuffle(r_order)
-    print("Number valid vectors:", len(valid))
+    arr = valid[1:]
+    get_all_possibilities(n, results, arr, valid)
 
-    while len(results) < n and len(r_order) > 0:
-        next_list = r_order[0]
-        del r_order[0]
-        results += def_queens_pos(next_list, results, valid)
-
-    print("My results:", results)
-
-    myBoard = MyBoard(n)
-    myBoard.generate_board()
-
-    for x, y in results:
-        myBoard.set_queen(x, y)
-
-    myBoard.print_board()
+    # r_order = valid.copy()
+    # random.shuffle(r_order)
+    # print("Number valid vectors:", len(valid))
+    #
+    # while len(results) < n and len(r_order) > 0:
+    #     next_list = r_order[0]
+    #     del r_order[0]
+    #     results += def_queens_pos(next_list, results, valid)
+    #
+    # print("My results:", results)
+    #
+    # myBoard = MyBoard(n)
+    # myBoard.generate_board()
+    #
+    # for x, y in results:
+    #     myBoard.set_queen(x, y)
+    #
+    # myBoard.print_board()
