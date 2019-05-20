@@ -2,7 +2,7 @@ from configparser import ConfigParser
 import psycopg2
 
 
-def config(filename='src\\database.ini', section='postgresql'):
+def config(filename='src/database.ini', section='postgresql'):
     parser = ConfigParser()
     parser.read(filename)
 
@@ -12,7 +12,7 @@ def config(filename='src\\database.ini', section='postgresql'):
         for param in params:
             db[param[0]] = param[1]
     else:
-        raise Exception('Section{} not found in the {} file'.format(section, filename))
+        raise Exception('Section {} not found in the {} file'.format(section, filename))
     return db
 
 
@@ -27,7 +27,30 @@ def connect():
         cur = conn.cursor()
 
         print('PostgreSQL database version:')
-        cur.execute("SELECT version()")
+        cur.execute("""
+        CREATE TABLE vectors (
+            size INTEGER NOT NULL,
+            vector1 VARCHAR(10) NOT NULL,
+            vector2 VARCHAR(10) NOT NULL,
+            vector3 VARCHAR(10) NOT NULL,
+            vector4 VARCHAR(10) NOT NULL,
+            vector5 VARCHAR(10) NOT NULL,
+            vector6 VARCHAR(10) NOT NULL,
+            vector7 VARCHAR(10) NOT NULL,
+            vector8 VARCHAR(10) NOT NULL,
+            vector9 VARCHAR(10) NOT NULL,
+            vector11 VARCHAR(10) NOT NULL,
+            vector12 VARCHAR(10) NOT NULL,
+            vector13 VARCHAR(10) NOT NULL,
+            vector14 VARCHAR(10) NOT NULL,
+            vector15 VARCHAR(10) NOT NULL,
+            vector16 VARCHAR(10) NOT NULL,
+            vector17 VARCHAR(10) NOT NULL,
+            vector18 VARCHAR(10) NOT NULL,
+            vector19 VARCHAR(10) NOT NULL,
+            vector20 VARCHAR(10) NOT NULL,
+            vector21 VARCHAR(10) NOT NULL
+            )""")
 
         db_version = cur.fetchone()
         print(db_version)

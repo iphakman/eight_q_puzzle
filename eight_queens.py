@@ -165,9 +165,9 @@ def get_all_possibilities(c, values, directions, board):
 if __name__ == "__main__":
     n = 5
 
-    while n < 4:
-        print("We need a value grater than 3, you passed {}".format(n))
-        n = int(input("Insert new value:"))
+    # while n < 4:
+    #     print("We need a value grater than 3, you passed {}".format(n))
+    #     n = int(input("Insert new value:"))
 
     # Get a list of lists containing our coordinates
     valid = gen_arrays(n)
