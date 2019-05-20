@@ -1,5 +1,7 @@
+import database_connection as dbc
 import numpy as np
-import random
+import random, os
+import psycopg2
 
 
 class MyBoard:
@@ -40,15 +42,6 @@ class MyBoard:
         This will the board each coordinate
         """
         print(self.board)
-
-
-def insert_into(coordinates):
-    """
-    This function will insert a possible solutions for our square
-    :param coordinates: the list of lists contains coordinates for each queen
-    :return: None
-    """
-    pass
 
 
 def get_solutions():
@@ -149,33 +142,155 @@ def gen_arrays(s):
     return my_arrays
 
 
-def get_all_possibilities(c, values, directions, board):
-    for row in directions[:-c]:
-        for val in row:
-            new_co = validate(val, values, directions)
-            if new_co:
-                values.append(val)
-                del directions[0]
-                values += get_all_possibilities(c, values, directions, board)
-        if len(values) == c:
-            print(values)
-            break
+def get_db_values(b_size):
+    """
+    This functions will get all possibilities based on the size
+    :param b_size: size of the board
+    :return: list of positions list
+    """
+    vector_arr = []
+
+    conn = None
+    try:
+        params = dbc.config()
+        print("Connecting to the PostgreSQL database...")
+        conn = psycopg2.connect(**params)
+        cur = conn.cursor()
+
+        print('Select query:')
+        cur.execute("SELECT * FROM public.vectors")
+
+        tmp_list = []
+        for row in cur.fetchall:
+            cnt = 0
+            while cnt <= b_size:
+                tmp_list.append(row[cnt])
+                cnt += 1
+            vector_arr.append(tmp_list)
+
+        cur.close()
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
+    finally:
+        if conn is not None:
+            conn.close()
+            print('Database connection closed.')
+
+    return vector_arr
+
+
+def insert_into(b_size, coordinates):
+    """
+    This function will insert a possible solutions for our square
+    :param coordinates: the list of lists contains coordinates for each queen
+    :return: None
+    """
+    columns = ""
+    values = "{}".format(b_size)
+    # values = [b_size]
+    val = ""
+    for x, y in coordinates:
+        values += (", '{}, {}'".format(x, y))
+        val += ", %s"
+
+    for c in range(1, b_size + 1):
+        columns += "vector{},".format(c)
+
+    # INSERT into VECTORS (size, """ + columns[:-1] + """) values (%s""" + val + """)"""
+    query_insert = """INSERT into cuenca.VECTORS (size, """ + columns[:-1] + """) values (""" + values + """)"""
+
+    print(query_insert)
+    insert = input("> ")
+
+    if insert == 'Y':
+        conn = None
+        try:
+            params = dbc.config()
+
+            print("Connecting to the PostgreSQL database...")
+            conn = psycopg2.connect(**params)
+
+            cur = conn.cursor()
+
+            print('Insert query:')
+            cur.execute(query_insert)
+
+            db_version = cur.fetchone()
+            print(db_version)
+
+            cur.close()
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(error)
+        finally:
+            if conn is not None:
+                conn.close()
+                print('Database connection closed.')
+    else:
+        print("Nothing to insert...")
+
+
+def get_all_possibilities(c, val, values, board, file_name):
+    origin_values = values[:]
+    for row in board:
+        if len(values) > 0:
+            if val in row:
+                continue
+            else:
+                for coord in row:
+                    new_co = validate(coord, values, board)
+                    if new_co:
+                        values.append(coord)
+                        if len(values) == c:
+                            res = ""
+                            values.sort()
+                            for k in values:
+                                res += "{}|".format(k)
+                            insert = True
+                            if res[:-1] in open(file_name).read():
+                                insert = False
+                            if insert:
+                                fn = open(file_name, 'a+')
+                                fn.write(res[:-1])
+                                fn.write('\n')
+                                fn.close()
+                        else:
+                            try:
+                                values += get_all_possibilities(c, coord, values, board, file_name)
+                            except TypeError as myerror:
+                                print("These positions aren't suitable.", values)
+                    values = origin_values[:]
+        else:
+            values.append(val)
+            continue
 
 
 if __name__ == "__main__":
-    n = 5
+    n = 4
 
-    # while n < 4:
-    #     print("We need a value grater than 3, you passed {}".format(n))
-    #     n = int(input("Insert new value:"))
+    while n < 4:
+        print("We need a value grater than 3, you passed {}".format(n))
+        n = int(input("Insert new value:"))
 
-    # Get a list of lists containing our coordinates
+    filename = os.path.join('output', 'coordinates_full_list.csv')
+    print(filename)
+
+    # Get a list of lists containing valid coordinates
     valid = gen_arrays(n)
 
-    results = []
-    arr = valid[1:]
-    get_all_possibilities(n, results, arr, valid)
+    # To get all possibilities
+    arr = valid[0]
 
+    for g in arr:
+        results = []
+        print("#### checking for {}".format(g))
+        get_all_possibilities(n, g, results, valid, filename)
+
+    # #######################################################################
+    # This will provide us a single board and print with the queens position.
+    # rows = get_db_values(n)
+    # for r in rows:
+    #     print(r)
+    # Generate a board...
     # r_order = valid.copy()
     # random.shuffle(r_order)
     # print("Number valid vectors:", len(valid))
@@ -194,3 +309,7 @@ if __name__ == "__main__":
     #     myBoard.set_queen(x, y)
     #
     # myBoard.print_board()
+
+    # To insert values:
+    # results = [(1, 2), (4, 1), (2, 0), (0, 4), (3, 3)]
+    # insert_into(n, results)

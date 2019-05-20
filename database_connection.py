@@ -25,35 +25,42 @@ def connect():
         conn = psycopg2.connect(**params)
 
         cur = conn.cursor()
+        # cur.execute("SET search_path TO {}".format(schema))
+
+        insert_query = """
+        CREATE TABLE cuenca.vectors (
+        size INTEGER NOT NULL,
+        vector1 VARCHAR(10) NULL,
+        vector2 VARCHAR(10) NULL,
+        vector3 VARCHAR(10) NULL,
+        vector4 VARCHAR(10) NULL,
+        vector5 VARCHAR(10) NULL,
+        vector6 VARCHAR(10) NULL,
+        vector7 VARCHAR(10) NULL,
+        vector8 VARCHAR(10) NULL,
+        vector9 VARCHAR(10) NULL,
+        vector11 VARCHAR(10) NULL,
+        vector12 VARCHAR(10) NULL,
+        vector13 VARCHAR(10) NULL,
+        vector14 VARCHAR(10) NULL,
+        vector15 VARCHAR(10) NULL,
+        vector16 VARCHAR(10) NULL,
+        vector17 VARCHAR(10) NULL,
+        vector18 VARCHAR(10) NULL,
+        vector19 VARCHAR(10) NULL,
+        vector20 VARCHAR(10) NULL,
+        vector21 VARCHAR(10) NULL
+        )"""
 
         print('PostgreSQL database version:')
-        cur.execute("""
-        CREATE TABLE vectors (
-            size INTEGER NOT NULL,
-            vector1 VARCHAR(10) NOT NULL,
-            vector2 VARCHAR(10) NOT NULL,
-            vector3 VARCHAR(10) NOT NULL,
-            vector4 VARCHAR(10) NOT NULL,
-            vector5 VARCHAR(10) NOT NULL,
-            vector6 VARCHAR(10) NOT NULL,
-            vector7 VARCHAR(10) NOT NULL,
-            vector8 VARCHAR(10) NOT NULL,
-            vector9 VARCHAR(10) NOT NULL,
-            vector11 VARCHAR(10) NOT NULL,
-            vector12 VARCHAR(10) NOT NULL,
-            vector13 VARCHAR(10) NOT NULL,
-            vector14 VARCHAR(10) NOT NULL,
-            vector15 VARCHAR(10) NOT NULL,
-            vector16 VARCHAR(10) NOT NULL,
-            vector17 VARCHAR(10) NOT NULL,
-            vector18 VARCHAR(10) NOT NULL,
-            vector19 VARCHAR(10) NOT NULL,
-            vector20 VARCHAR(10) NOT NULL,
-            vector21 VARCHAR(10) NOT NULL
-            )""")
-
-        db_version = cur.fetchone()
-        print(db_version)
+        # cur.execute('create schema cuenca')
+        # cur.execute('select * from pg_catalog.pg_user')
+        cur.execute("SELECT distinct schemaname FROM pg_catalog.pg_tables")
+        # cur.execute("show search_path")
+        # cur.execute(insert_query)
+        db_version = cur.fetchall()
+        for row in db_version:
+            print(row)
 
         cur.close()
     except (Exception, psycopg2.DatabaseError) as error:
