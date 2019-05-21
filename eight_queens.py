@@ -100,12 +100,14 @@ def gen_arrays(s):
     :param s: we need to pass the size of the square
     :return: this will return the list of vectors created
     """
+    full_coordinates = []
     my_arrays = []
     # Generating rows and lines
     for x in range(s):
         tmp_arr_x = set()
         tmp_arr_y = set()
         for y in range(s):
+            full_coordinates.append((x, y))
             tmp_arr_x.add((x, y))
             tmp_arr_y.add((y, x))
         if tmp_arr_x not in my_arrays:
@@ -139,7 +141,7 @@ def gen_arrays(s):
         if len(arr_ry) > 1 and arr_ry not in my_arrays:
             my_arrays.append(arr_ry)
 
-    return my_arrays
+    return my_arrays, full_coordinates
 
 
 def get_db_values(b_size):
@@ -229,6 +231,42 @@ def insert_into(b_size, coordinates):
         print("Nothing to insert...")
 
 
+def insert_record(array_result, res_file):
+    res = ""
+    array_result.sort()
+    for k in array_result:
+        res += "{}|".format(k)
+    insert = True
+    if res[:-1] in open(res_file).read():
+        insert = False
+    if insert:
+        fn = open(res_file, 'a+')
+        fn.write(res[:-1])
+        fn.write('\n')
+        fn.close()
+
+
+def get_full_poss(values, chk, board, c, file_name):
+    values_org = values[:]
+    for row in board:
+        for coord in row:
+            if coord in chk:
+                continue
+            else:
+                chk.append(coord)
+                test = validate(coord, values, board)
+                if test:
+                    values.append(coord)
+                    if len(values) == c:
+                        print(values)
+                        insert_record(values, file_name)
+                        values = values_org[:]
+                    else:
+                        get_full_poss(values, values, board, c, file_name)
+                else:
+                    values = values_org[:]
+
+
 def get_all_possibilities(c, val, values, val_checked, board, file_name):
     origin_values = values[:]
     for row in board:
@@ -278,16 +316,18 @@ if __name__ == "__main__":
     print(filename)
 
     # Get a list of lists containing valid coordinates
-    valid = gen_arrays(n)
+    valid, all_coordinates = gen_arrays(n)
 
     # To get all possibilities
     arr = valid[0]
 
-    for g in arr:
-        results = []
+    for g in all_coordinates:
+        results = [g]
         checked = []
         print("#### checking for {}".format(g))
-        get_all_possibilities(n, g, results, checked, valid, filename)
+        # get_all_possibilities(n, g, results, checked, valid, filename)
+
+        get_full_poss(results, checked, valid, n, filename)
 
     # #######################################################################
     # This will provide us a single board and print with the queens position.
